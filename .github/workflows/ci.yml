@@ -60,10 +60,13 @@ jobs:
       GH_REPO: ${{ github.repository }}
       DL: ${{ github.server_url }}/${{ github.repository }}/releases/download/nightly
     steps:
+      # Both files were uploaded from out/, so the artifact's root is out/:
+      # put them back there
       - name: Download builds
         uses: actions/download-artifact@v8
         with:
           name: iconmaker-${{ github.sha }}
+          path: out
 
       - name: Move the nightly tag to this commit
         run: |
