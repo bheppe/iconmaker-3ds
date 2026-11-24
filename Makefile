@@ -1,5 +1,5 @@
 #---------------------------------------------------------------------------------
-# Icon Maker for gpSP 3D. Build with ./build-iconmaker.sh (it makes the
+# Icon Maker: HOME Menu icons for GBA and SNES games. Build with ./build-iconmaker.sh (it makes the
 # template forwarder in data/ first).
 #---------------------------------------------------------------------------------
 .SUFFIXES:
@@ -13,9 +13,9 @@ TARGET   := iconmaker
 BUILD    := build
 SOURCES  := source
 DATA     := data
-INCLUDES := source ../gpsp3ds/source
-# gpSP 3D's UI kit (ui.c, ui_font.c), shared so both apps look the same
-UIKIT    := ../gpsp3ds/source
+INCLUDES := source uikit
+# gpSP 3D's UI kit (ui.c, ui_font.c), copied from gpSP 3D so both apps look the same
+UIKIT    := uikit
 
 APP_TITLE       := Icon Maker
 APP_DESCRIPTION := GBA + SNES games on the HOME Menu

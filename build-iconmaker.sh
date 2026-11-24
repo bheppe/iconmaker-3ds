@@ -1,10 +1,11 @@
 #!/bin/bash
-# Builds Icon Maker for gpSP 3D (run in the devkitPro MSYS2 shell):
+# Builds Icon Maker (run in the build image, the devcontainer or the devkitPro
+# MSYS2 shell):
 #   1. the template forwarder CIA it carries (data/fwd_gpsp3d.bin),
 #   2. the app: out/iconmaker.3dsx and out/iconmaker.cia.
 set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"
-GP="$HERE/../gpsp3ds"
+FWD="$HERE/forwarder"
 cd "$HERE"
 # Everything is also written to build.log
 exec > >(tee "$HERE/build.log") 2>&1
@@ -19,7 +20,7 @@ TMP="$HERE/build-template"
 rm -rf "$TMP"; mkdir -p "$TMP/romfs" data out
 
 echo "=== 1/2 template forwarders ==="
-make -C "$GP/forwarder" >/dev/null
+make -C "$FWD" >/dev/null
 # the forwarder ignores romfs:/path.txt once Icon Maker fills in its slot
 printf '\n' > "$TMP/romfs/path.txt"
 # the banner picture is noise: it hardly compresses, so it leaves room for any
@@ -28,11 +29,11 @@ printf '\n' > "$TMP/romfs/path.txt"
 bannertool makebanner -i res/template-banner.png -a res/jingle.wav -o "$TMP/default.bnr" >/dev/null
 bannertool makesmdh -s "gpSP 3D game" -l "gpSP 3D game" -p "gpSP 3D" \
   -f visible,allow3d,recordusage,extendedbanner \
-  -i "$GP/res/icon.png" -o "$TMP/icon.icn" >/dev/null
+  -i res/gpsp3d-icon.png -o "$TMP/icon.icn" >/dev/null
 # unique ID 0xF3D00 = title ID 000400000F3D0000, which Icon Maker replaces;
 # unencrypted and uncompressed so it can be patched on the 3DS
-makerom -f cia -o data/fwd_gpsp3d.bin -rsf "$GP/forwarder/forwarder.rsf" -exefslogo \
-  -elf "$GP/forwarder/forwarder.elf" -icon "$TMP/icon.icn" -banner "$TMP/default.bnr" \
+makerom -f cia -o data/fwd_gpsp3d.bin -rsf "$FWD/forwarder.rsf" -exefslogo \
+  -elf "$FWD/forwarder.elf" -icon "$TMP/icon.icn" -banner "$TMP/default.bnr" \
   -DAPP_TITLE="gp3dfwd" -DAPP_PRODUCT_CODE="CTR-GP3F" -DAPP_UNIQUE_ID=0xF3D00 \
   -DAPP_SYSTEM_MODE=64MB -DAPP_SYSTEM_MODE_EXT=Legacy -DAPP_ENCRYPTED=false \
   -DAPP_ROMFS="$TMP/romfs"
@@ -41,8 +42,8 @@ ls -l data/fwd_gpsp3d.bin
 
 # the same with the 3D banner (made by tools/make_banner3d.py) and its jingle
 bannertool makebanner -ci res/banner3d.cgfx -a res/jingle.wav -o "$TMP/banner3d.bnr" >/dev/null
-makerom -f cia -o data/fwd_gpsp3d_3d.bin -rsf "$GP/forwarder/forwarder.rsf" -exefslogo \
-  -elf "$GP/forwarder/forwarder.elf" -icon "$TMP/icon.icn" -banner "$TMP/banner3d.bnr" \
+makerom -f cia -o data/fwd_gpsp3d_3d.bin -rsf "$FWD/forwarder.rsf" -exefslogo \
+  -elf "$FWD/forwarder.elf" -icon "$TMP/icon.icn" -banner "$TMP/banner3d.bnr" \
   -DAPP_TITLE="gp3dfwd" -DAPP_PRODUCT_CODE="CTR-GP3F" -DAPP_UNIQUE_ID=0xF3D00 \
   -DAPP_SYSTEM_MODE=64MB -DAPP_SYSTEM_MODE_EXT=Legacy -DAPP_ENCRYPTED=false \
   -DAPP_ROMFS="$TMP/romfs"
@@ -55,7 +56,7 @@ cp res/banner3d-app.bnr "$TMP/app.bnr"
 bannertool makesmdh -s "Icon Maker" -l "Icon Maker: GBA + SNES" -p "bheppe" \
   -f visible,allow3d,recordusage,extendedbanner \
   -i res/icon.png -o "$TMP/app.icn" >/dev/null
-makerom -f cia -o out/iconmaker.cia -rsf "$GP/res/app.rsf" -exefslogo -elf iconmaker.elf \
+makerom -f cia -o out/iconmaker.cia -rsf res/app.rsf -exefslogo -elf iconmaker.elf \
   -icon "$TMP/app.icn" -banner "$TMP/app.bnr" \
   -DAPP_TITLE="Icon Maker" -DAPP_PRODUCT_CODE="CTR-GP3I" -DAPP_UNIQUE_ID=0xF3D01 -major 0 -minor 2 -micro 0 \
   -DAPP_SYSTEM_MODE=64MB -DAPP_SYSTEM_MODE_EXT=Legacy -DAPP_ENCRYPTED=false

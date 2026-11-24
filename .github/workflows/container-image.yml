@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - docker/gpsp3d-devcontainer.Dockerfile
+      - docker/iconmaker-devcontainer.Dockerfile
       - .github/workflows/container-image.yml
   workflow_dispatch:
 
@@ -39,7 +39,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: docker/gpsp3d-devcontainer.Dockerfile
+          file: docker/iconmaker-devcontainer.Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
