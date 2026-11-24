@@ -12,25 +12,6 @@ permissions:
   packages: read
 
 jobs:
-  # The dynarec checks from tests/gba-roms: the core built for ARM Linux and run
-  # under qemu, compared with the interpreter. They need no devkitPro, so they
-  # run on the plain runner, apart from the build so both report even when one fails.
-  rom-tests:
-    name: Core ROM Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Install cross compilers and qemu
-        run: |
-          sudo apt-get update -q
-          sudo apt-get install -y -q --no-install-recommends \
-            gcc-arm-none-eabi gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf qemu-user rsync
-
-      - name: Run tests
-        run: bash tests/gba-roms/run.sh
-
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -54,12 +35,10 @@ jobs:
       - name: Upload builds
         uses: actions/upload-artifact@v7
         with:
-          name: gpsp3d-${{ github.sha }}
+          name: iconmaker-${{ github.sha }}
           path: |
-            gpsp3ds/out/gpsp3d.cia
-            gpsp3ds/out/gpsp3d.3dsx
-            iconmaker/out/iconmaker.cia
-            iconmaker/out/iconmaker.3dsx
+            out/iconmaker.cia
+            out/iconmaker.3dsx
 
   # Builds from main as a "nightly" pre-release: release files can be
   # downloaded without a GitHub account, unlike the run's artifacts. Only on
@@ -81,22 +60,24 @@ jobs:
       GH_REPO: ${{ github.repository }}
       DL: ${{ github.server_url }}/${{ github.repository }}/releases/download/nightly
     steps:
+      # Both files were uploaded from out/, so the artifact's root is out/:
+      # put them back there
       - name: Download builds
         uses: actions/download-artifact@v8
         with:
-          name: gpsp3d-${{ github.sha }}
+          name: iconmaker-${{ github.sha }}
+          path: out
 
       - name: Move the nightly tag to this commit
         run: |
           gh api -X PATCH "repos/$GH_REPO/git/refs/tags/nightly" -f sha="$GITHUB_SHA" -F force=true >/dev/null \
             || gh api -X POST "repos/$GH_REPO/git/refs" -f ref=refs/tags/nightly -f sha="$GITHUB_SHA" >/dev/null
 
-      - name: FBI install QR codes
+      - name: FBI install QR code
         run: |
           sudo apt-get update -q
           sudo apt-get install -y -q --no-install-recommends qrencode
           # FBI's "Scan QR Code" remote install expects the plain URL of the .cia
-          qrencode -o gpsp3d-QR.png -s 8 -m 3 -l M "$DL/gpsp3d.cia"
           qrencode -o iconmaker-QR.png -s 8 -m 3 -l M "$DL/iconmaker.cia"
 
       - name: Update the pre-release
@@ -111,10 +92,9 @@ jobs:
             echo
             echo 'Open **FBI** -> **Remote Install** -> **Scan QR Code**, then scan:'
             echo
-            echo '| gpSP 3D | Icon Maker |'
-            echo '| :---: | :---: |'
-            echo "| <img src=\"$DL/gpsp3d-QR.png\" alt=\"QR code to install the gpSP 3D nightly with FBI\" width=\"220\"> | <img src=\"$DL/iconmaker-QR.png\" alt=\"QR code to install the Icon Maker nightly with FBI\" width=\"220\"> |"
-            echo "| [\`gpsp3d.cia\`]($DL/gpsp3d.cia) | [\`iconmaker.cia\`]($DL/iconmaker.cia) |"
+            echo "<img src=\"$DL/iconmaker-QR.png\" alt=\"QR code to install the Icon Maker nightly with FBI\" width=\"220\">"
+            echo
+            echo "[\`iconmaker.cia\`]($DL/iconmaker.cia)"
           } > notes.md
           # Releases made with GITHUB_TOKEN start no workflows, so this doesn't run release.yml
           if gh release view nightly >/dev/null 2>&1; then
@@ -123,6 +103,4 @@ jobs:
             gh release create nightly --title "Nightly ($short)" --notes-file notes.md --prerelease --latest=false --verify-tag
           fi
           gh release upload nightly --clobber \
-            gpsp3ds/out/gpsp3d.cia gpsp3ds/out/gpsp3d.3dsx \
-            iconmaker/out/iconmaker.cia iconmaker/out/iconmaker.3dsx \
-            gpsp3d-QR.png iconmaker-QR.png
+            out/iconmaker.cia out/iconmaker.3dsx iconmaker-QR.png

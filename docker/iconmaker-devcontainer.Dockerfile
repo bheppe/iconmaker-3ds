@@ -1,10 +1,9 @@
-# Build image for gpSP 3D: devkitARM with the 3DS packages, plus bannertool and
+# Build image for Icon Maker: devkitARM with the 3DS packages, plus bannertool and
 # makerom for the CIAs. Used by .devcontainer/devcontainer.json; GitHub Actions
 # can build in the same image. The toolchain is pinned, so rebuilding the image
 # cannot silently change it: devkitARM by digest (its image already has 3ds-dev:
 # libctru, citro3d, picasso, 3dsxtool, smdhtool, raw2c, and 3ds-libjpeg-turbo
-# and 3ds-libpng for Icon Maker), bannertool and makerom
-# by commit. Renovate (.github/renovate.json) proposes updates to all three;
+# and 3ds-libpng), bannertool and makerom by commit. Renovate (.github/renovate.json) proposes updates to all three;
 # by hand, take a newer tag from https://hub.docker.com/r/devkitpro/devkitarm/tags
 # and its index digest.
 ARG DEVKITARM_IMAGE=docker.io/devkitpro/devkitarm:20260610@sha256:116afba8df8453961de2936ffab20dd441edf4d682856c1ec8b0e53d7ed0bbf5
@@ -36,13 +35,13 @@ RUN git clone https://github.com/3DSGuy/Project_CTR.git /tmp/Project_CTR \
 
 FROM ${DEVKITARM_IMAGE}
 
-# Icon Maker decodes JPEGs with libjpeg-turbo and PNGs with libpng; gpSP 3D's
-# update check uses libcurl. The pinned image has them, this makes sure (and
+# Icon Maker decodes JPEGs with libjpeg-turbo and PNGs with libpng and downloads
+# box art with libcurl. The pinned image has them, this makes sure (and
 # installs nothing then)
 RUN dkp-pacman -S --needed --noconfirm 3ds-libjpeg-turbo 3ds-libpng 3ds-curl
 
-# Host tools: a native compiler and Python for the PC tests (iconmaker/test) and
-# gpsp3ds/tools/make_font.py, plus git, gh and ssh for working in the container.
+# Host tools: a native compiler and Python for the PC tests (test/) and
+# tools/make_font.py, plus git, gh and ssh for working in the container.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     python3 \

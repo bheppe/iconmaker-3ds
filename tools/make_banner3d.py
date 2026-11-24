@@ -14,8 +14,9 @@ Both start as noise, so the compressed model always has room for any picture.
 
   python3 tools/make_banner3d.py --jingle          only res/jingle.wav
   python3 tools/make_banner3d.py /path/to/pycgfx   the models, then the 3D
-      banners of gpSP 3D, Icon Maker and Snes9x 3D (its source in SNES9X_DIR,
-      or next to this repo as snes9x_3ds), from their banner3d-name.png (256x64) and
+      banners of Icon Maker, gpSP 3D (its source in GPSP3D_DIR, or next to
+      this repo as gpsp-3d) and Snes9x 3D (its source in SNES9X_DIR, or next
+      to this repo as snes9x_3ds), from their banner3d-name.png (256x64) and
       banner3d-label.png (128x128)
 
 The model needs pycgfx (https://github.com/skyfloogle/pycgfx, glTF to CGFX),
@@ -442,14 +443,17 @@ def app_banner(model, name, label, cwav, out):
 
 
 def make_app_banners():
-    root = os.path.abspath(os.path.join(RES, "..", ".."))
+    root = os.path.abspath(os.path.join(RES, ".."))
     with open(os.path.join(RES, "jingle.bcwav"), "rb") as f:
         jingle = f.read()
-    gp = os.path.join(root, "gpsp3ds", "res")
-    app_banner(os.path.join(RES, "banner3d.cgfx"), os.path.join(gp, "banner3d-name.png"),
-               os.path.join(gp, "banner3d-label.png"), jingle, os.path.join(gp, "banner3d.bnr"))
     app_banner(os.path.join(RES, "banner3d.cgfx"), os.path.join(RES, "banner3d-name.png"),
                os.path.join(RES, "banner3d-label.png"), jingle, os.path.join(RES, "banner3d-app.bnr"))
+    # gpSP 3D's source: GPSP3D_DIR, else next to this repo
+    gp_dir = os.environ.get("GPSP3D_DIR") or os.path.join(root, "..", "gpsp-3d")
+    gp = os.path.join(gp_dir, "gpsp3ds", "res")
+    if os.path.isfile(os.path.join(gp, "banner3d-name.png")):
+        app_banner(os.path.join(RES, "banner3d.cgfx"), os.path.join(gp, "banner3d-name.png"),
+                   os.path.join(gp, "banner3d-label.png"), jingle, os.path.join(gp, "banner3d.bnr"))
     # Snes9x 3D's source: SNES9X_DIR, else next to this repo
     snes_dir = os.environ.get("SNES9X_DIR") or os.path.join(root, "..", "snes9x_3ds")
     snes = os.path.join(snes_dir, "resources")

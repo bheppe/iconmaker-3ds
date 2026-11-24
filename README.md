@@ -1,8 +1,28 @@
 # Icon Maker (GBA + SNES)
 
 Puts GBA and SNES games on the HOME Menu right from the 3DS, no PC needed.
-GBA games open in gpSP 3D, SNES games (`.sfc`, `.smc`, `.fig`, `.swc`, or a `.zip` of one)
-in [Snes9x 3D](https://github.com/bheppe/snes9x_3ds).
+GBA games open in [gpSP 3D](https://github.com/bheppe/gpsp-3d), SNES games
+(`.sfc`, `.smc`, `.fig`, `.swc`, or a `.zip` of one) in
+[Snes9x 3D](https://github.com/bheppe/snes9x_3ds).
+
+Icon Maker was part of the gpSP 3D repo up to gpSP 3D v0.1.7 (Icon Maker
+0.2.0) and has its own repo since then, with its history and versions.
+
+## Install
+
+- **Universal-Updater**: add the gpSP 3D store,
+  `https://bheppe.github.io/gpsp-3d/unistore/gpsp3d.unistore`, and pick
+  **Icon Maker** in it.
+- **FBI**: every [release](https://github.com/bheppe/iconmaker-3ds/releases)
+  has a QR code for `iconmaker.cia` in its notes. In FBI, choose **Remote
+  Install** -> **Scan QR Code** and scan it.
+- **By hand**: `iconmaker.cia` from the
+  [latest release](https://github.com/bheppe/iconmaker-3ds/releases/latest),
+  installed with FBI, or `iconmaker.3dsx` in the Homebrew Launcher.
+
+The `nightly` pre-release is built from every push to `main`, for testing.
+
+## Use
 
 1. Install `iconmaker.cia` with FBI (or run `iconmaker.3dsx` from the Homebrew Launcher).
    gpSP 3D (and Snes9x 3D, for SNES games) must be installed as a CIA. Snes9x 3D needs
@@ -99,25 +119,93 @@ Y on a folder's list makes icons for every game in it. Games that have an icon
 already are marked `*` in the list.
 
 R opens **My icons**, the games you've put on the HOME Menu: X deletes an icon
-(the game file stays). Icons made on a PC with `make-forwarders.sh` show up there too.
+(the game file stays). Icons made on a PC with gpSP 3D's `make-forwarders.sh` show up there too.
 
 Needs custom firmware with signature patches (Luma3DS), as for any CIA.
 
 ## Building
 
-In the devkitPro MSYS2 shell: `./build-iconmaker.sh`. It builds the template
-forwarder (from `../gpsp3ds/forwarder`, title ID 000400000F3D0000, unencrypted)
-into `data/fwd_gpsp3d.bin`, then the app into `out/`.
+You need [devkitPro](https://devkitpro.org/wiki/Getting_Started) with the 3DS
+packages `3ds-dev`, `3ds-curl`, `3ds-libjpeg-turbo` and `3ds-libpng`
+(`dkp-pacman -S 3ds-dev 3ds-curl 3ds-libjpeg-turbo 3ds-libpng`), plus
+`makerom` and `bannertool` in your PATH. Then:
+
+```
+git clone https://github.com/bheppe/iconmaker-3ds
+bash iconmaker-3ds/build-iconmaker.sh
+```
+
+It builds the template forwarder (from `forwarder/`, title ID
+000400000F3D0000, unencrypted) into `data/fwd_gpsp3d.bin`, then the app into
+`out/` (`iconmaker.cia`, `iconmaker.3dsx`, and `template-gpsp3d.cia` to check).
 
 It also builds a second template with the 3D banner (`res/banner3d.cgfx` and
-`res/jingle.wav`, made by `tools/make_banner3d.py`, which also makes gpSP 3D's
-and Icon Maker's own 3D banners; it needs [pycgfx](https://github.com/skyfloogle/pycgfx),
+`res/jingle.wav`, made by `tools/make_banner3d.py`, which also makes Icon
+Maker's own 3D banner and those of gpSP 3D and Snes9x 3D when their repos are
+next to this one; it needs [pycgfx](https://github.com/skyfloogle/pycgfx),
 gltflib and Pillow: `python3 tools/make_banner3d.py /path/to/pycgfx`).
 
-How it works: `source/fwdcia.c` copies the template, gives it a title ID made from
-the game's path, writes the game's path into the forwarder's slot, sets the name
-and icon, and redoes every hash the 3DS checks. `test/` checks this on a PC
-(`fwdtest` patches a CIA, `verify.py` checks every hash independently;
-`pngtest` and `jpegtest` shrink a PNG or JPEG as Icon Maker does, with the
-PC's libpng and libjpeg; `boxarttest game.gba out.png` gets a game's box art
-as Icon Maker does, with the PC's libcurl).
+### Building in a devcontainer
+
+The repo has a devcontainer with everything above installed at pinned
+versions. Open the repo in VS Code with the Dev Containers extension (Docker
+or Podman) and choose **Reopen in Container**, or start a GitHub Codespace.
+Then run `bash build-iconmaker.sh` in the container's terminal.
+
+The image is defined in `docker/iconmaker-devcontainer.Dockerfile`; CI uses
+the published copy tagged with a hash of that file
+(`bash docker/build-image.sh`). `bash docker/ci-build.sh` builds Icon Maker
+and checks a forwarder made from the real template, the same test build
+GitHub Actions runs for every pull request and every push to `main`.
+
+The `nightly` tag moves with every push to `main`, so `git pull` may stop with
+`would clobber existing tag`; `git fetch --tags --force` fixes it.
+
+### How it works
+
+Every icon is a small CIA whose program is the forwarder
+(`forwarder/source/main.c`). Started from the HOME Menu, it reads the game,
+the app to start and that app's launch file from a slot inside itself, writes
+the game's path to the launch file (`sdmc:/3ds/gpsp3d/launch.txt` for gpSP 3D,
+`sdmc:/3ds/snes9x_3ds/launch.txt` for Snes9x 3D) and starts the app.
+
+`source/fwdcia.c` copies the template CIA, gives it a title ID made from the
+game's path, fills in the slot, sets the name, icon and banner, and redoes
+every hash the 3DS checks. `test/` checks this on a PC (`fwdtest` patches a
+CIA, `verify.py` checks every hash independently; `pngtest` and `jpegtest`
+shrink a PNG or JPEG as Icon Maker does, with the PC's libpng and libjpeg;
+`boxarttest game.gba out.png` gets a game's box art as Icon Maker does, with
+the PC's libcurl).
+
+Icon Maker keeps its settings and lists in `sdmc:/3ds/gpsp3d/`, as it did
+when it was part of gpSP 3D.
+
+## Support
+
+Bug reports and ideas: [Issues](https://github.com/bheppe/iconmaker-3ds/issues)
+or [Discord](https://discord.gg/pBWY3fRgnU). What's done and planned is in
+[ROADMAP.md](ROADMAP.md). A tip helps keep fixes coming:
+https://ko-fi.com/bheppe
+
+## Credits and licenses
+
+- **Icon Maker** by bheppe, with michvllni. GPL-2.0-or-later, see
+  [COPYING](COPYING).
+- The forwarder (`forwarder/`) and the UI kit (`uikit/`) come from
+  [gpSP 3D](https://github.com/bheppe/gpsp-3d) (GPL-2.0-or-later).
+- UI font: [Inter](https://rsms.me/inter/) by Rasmus Andersson, SIL Open Font
+  License 1.1 (`res/Inter-LICENSE.txt`).
+- `source/stb_image.h`: [stb](https://github.com/nothings/stb) by Sean
+  Barrett, MIT or public domain.
+- The 3D banner model is made by `tools/make_banner3d.py` with
+  [pycgfx](https://github.com/skyfloogle/pycgfx) by skyfloogle (glTF to CGFX;
+  run on a PC, not part of the app). The fixes that make such a model work on
+  the real HOME Menu follow [ClouDS Music FA](https://github.com/Epic0522/ClouDS-Music-FA)'s
+  and [ftb](https://github.com/fosterbarnes/ftb)'s banner converters.
+- Box art is downloaded, on the 3DS when you ask for it, from
+  [libretro-thumbnails](https://github.com/libretro-thumbnails/libretro-thumbnails);
+  games are found in [libretro-database](https://github.com/libretro/libretro-database)'s
+  No-Intro lists (CC BY-SA 4.0). Neither is part of the app.
+
+Game Boy Advance, Super Nintendo and Nintendo 3DS are trademarks of Nintendo.
+This project is not affiliated with or endorsed by Nintendo.

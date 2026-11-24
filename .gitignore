@@ -8,3 +8,8 @@ data/*.bin
 *.map
 build.log
 __pycache__/
+*.o
+*.a
+*.log
+# test builds
+*.cia

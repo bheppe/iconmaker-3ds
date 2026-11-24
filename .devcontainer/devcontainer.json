@@ -1,7 +1,7 @@
 {
-    "name": "gpSP 3D - 3DS Homebrew",
+    "name": "Icon Maker - 3DS Homebrew",
     "build": {
-        "dockerfile": "../docker/gpsp3d-devcontainer.Dockerfile",
+        "dockerfile": "../docker/iconmaker-devcontainer.Dockerfile",
         "context": ".."
     },
     "remoteEnv": {
