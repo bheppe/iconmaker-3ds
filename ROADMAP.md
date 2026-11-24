@@ -35,6 +35,16 @@ and their `#` numbers are issues and PRs there.
 | Custom banner sounds (`Game.banner.wav`) | Surge And Finn (Discord) | 📋 next |
 | Community art repo for original icons and banners (no copies of official box art) | | 📋 |
 
+**Systems as plugins** (icons for other 3DS apps' games; the first is rmxp3ds, RPG Maker XP games)
+
+| Change | Asked by | Status |
+|---|---|---|
+| **System files**: the systems come from `sdmc:/3ds/iconmaker/systems/*.cfg` (up to 16) as well as the built-in GBA and SNES; a file with a built-in system's name replaces it; a bad file is skipped and listed under the games; the header shows the installed systems' tags; box art per system (`boxart=`) | michvllni (GitHub) | 🧪 |
+| **Games found by each system's `extensions=`**; a `.zip` goes to the system with the extension of its first file, else to the first with `.zip`; texts say "games" and the intro lists each system's app | michvllni (GitHub) | 🧪 |
+| **Folder games** (`folder_game=`): a folder holding `Game.ini` is one game, named from `title_from=` | michvllni (GitHub) | 📋 |
+| **Pictures for folder games**: `<folder>.png` next to it, or `icon.png` / `banner.png` in it | michvllni (GitHub) | 📋 |
+| **Default icons** `icon=generic` (a tile with the name) and `icon=<png>` | michvllni (GitHub) | 📋 |
+
 ## Later
 
 | Plan | Asked by | Status |

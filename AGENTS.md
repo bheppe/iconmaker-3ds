@@ -21,7 +21,8 @@ Read it before changing anything; the README is for users, this is for you.
 
 | Path | What |
 |---|---|
-| `source/main.c` | the app: game list, My icons, settings, the systems table (`systems[]`) |
+| `source/main.c` | the app: game list, My icons, settings |
+| `source/systems.c` | the systems: built-in GBA/SNES plus `sdmc:/3ds/iconmaker/systems/*.cfg` (untrusted, every value checked) |
 | `source/fwdcia.c`, `banner.c` | patch a template CIA on the 3DS (title ID, SMDH, banner, forwarder slot, every hash) |
 | `source/pngshrink.c`, `jpegshrink.c` | covers decoded small while read (libpng / libjpeg) |
 | `source/boxart.c`, `netget.c` | box art download: libretro's No-Intro list, CRC32, libretro-thumbnails (libcurl) |
@@ -32,7 +33,7 @@ Read it before changing anything; the README is for users, this is for you.
 | `tools/make_banner3d.py` | makes the 3D HOME Menu banners (needs pycgfx; run on a PC) |
 | `res/` | app icon and banners, template banner, chime, `app.rsf`, `gpsp3d-icon.png` (the template forwarder's icon) |
 | `data/` | the template CIAs, made by `build-iconmaker.sh` (not in git) |
-| `test/` | `fwdtest.c` + `verify.py` (forwarder CIA checked like the 3DS does), `pngtest.c`, `jpegtest.c`, `boxarttest.c` |
+| `test/` | `fwdtest.c` + `verify.py` (forwarder CIA checked like the 3DS does), `pngtest.c`, `jpegtest.c`, `boxarttest.c`, `systemstest.c` (system files; CI runs it) |
 | `docker/` | the build image and `ci-build.sh` (what CI runs) |
 | `ROADMAP.md` | what's done, in testing, planned; update it with every change |
 
@@ -75,7 +76,8 @@ make TIMING=1             # a timing variant (after build-iconmaker.sh made data
   (Icon Maker gives each forwarder its own). gpSP 3D is `0xBAC81`, Snes9x 3D
   `0x38A71`.
 - Settings stay in `sdmc:/3ds/gpsp3d/` (`iconmaker.cfg`, box art lists), as
-  before the move: don't move them without a migration.
+  before the move: don't move them without a migration. System files are
+  new and Icon Maker's own: `sdmc:/3ds/iconmaker/systems/`.
 
 ## 3DS rules learned the hard way
 
